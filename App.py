@@ -17,31 +17,43 @@ st.set_page_config(
 # -------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root{
   --bg1:#f6f9ff;
   --bg2:#eef3ff;
   --card:#ffffffcc;
   --border: rgba(20, 40, 80, 0.10);
-  --text:#1f2937;
-  --muted:#6b7280;
+  --text:#111827;
+  --muted:#4b5563;
   --accent:#3b82f6;
-  --accent2:#22c55e;
 }
 
 .stApp{
-  max-width: 760px;
+  max-width: 820px;
   margin: 0 auto;
-  padding: 2.4rem 2.0rem 3.6rem 2.0rem;
+  padding: 2.6rem 2.2rem 3.8rem 2.2rem;
   background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
 }
 
 html, body, [class*="css"]{
   font-family: 'Inter', 'Segoe UI', sans-serif;
   color: var(--text);
-  font-size: 18px;              /* 全局字体更大 */
-  line-height: 1.55;
+  font-size: 20px !important;     /* ✅ 全局再大一档 */
+  line-height: 1.6;
+}
+
+/* ✅ 统一放大 Markdown 文字（描述、普通段落等） */
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li,
+.stMarkdown p,
+.stMarkdown li{
+  font-size: 1.15rem !important;
+}
+
+/* ✅ 强制隐藏旧版本残留的 “Feature order ...” 行（就算你没删干净也不会显示） */
+.small-note{
+  display: none !important;
 }
 
 .block-container{
@@ -54,65 +66,73 @@ html, body, [class*="css"]{
   border-radius: 18px;
   padding: 22px 22px 18px 22px;
   box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .title{
-  font-size: 2.05rem;           /* 标题更大 */
+  font-size: 2.25rem;             /* ✅ 标题更大 */
   font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 0 0 10px 0;
+  margin: 0 0 12px 0;
 }
 
 .desc{
-  font-size: 1.15rem;           /* 描述更大 */
+  font-size: 1.22rem;             /* ✅ 描述更大 */
   color: var(--muted);
   margin: 0;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .input-card{
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 18px;
-  padding: 18px 22px 10px 22px;
+  padding: 16px 20px 8px 20px;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
   margin-top: 14px;
+  margin-bottom: 10px;
 }
 
 .section-title{
-  font-size: 1.15rem;           /* 小标题更大 */
+  font-size: 1.22rem;             /* ✅ 小标题更大 */
   font-weight: 800;
-  margin: 0 0 12px 0;
-  color: #111827;
+  margin: 0;
 }
 
+/* ✅ Radio 标题和选项都放大 */
 .stRadio > label{
-  font-weight: 800;
-  font-size: 1.10rem;           /* radio 标题更大 */
+  font-weight: 800 !important;
+  font-size: 1.18rem !important;
+}
+div[role="radiogroup"] label{
+  font-size: 1.12rem !important;
+  font-weight: 700 !important;
 }
 
+/* ✅ 输入标签更大 */
 .stNumberInput label{
-  font-size: 1.10rem;           /* 输入标签更大 */
-  font-weight: 800;
+  font-size: 1.18rem !important;
+  font-weight: 800 !important;
   color: #111827;
 }
 
+/* ✅ 输入框的数值更大 */
 div[data-baseweb="input"] input{
-  font-size: 1.08rem !important; /* 输入框数值更大 */
-  padding: 10px 12px !important;
+  font-size: 1.18rem !important;
+  padding: 12px 14px !important;
 }
 
+/* ✅ 按钮更大 */
 .stButton > button{
   width: 100%;
   background: var(--accent);
   color: white;
   font-weight: 900;
-  font-size: 1.15rem;           /* 按钮更大 */
-  padding: 0.82rem 1.1rem;
+  font-size: 1.22rem !important;
+  padding: 0.9rem 1.2rem;
   border-radius: 14px;
   border: none;
-  margin-top: 16px;
+  margin-top: 18px;
   box-shadow: 0 12px 20px rgba(59,130,246,0.18);
 }
 
@@ -121,23 +141,23 @@ div[data-baseweb="input"] input{
   background: white;
   color: var(--text);
   font-weight: 800;
-  font-size: 1.08rem;           /* 下载按钮更大 */
+  font-size: 1.15rem !important;
   border: 1px solid rgba(31,41,55,0.14);
   border-radius: 14px;
   margin-top: 12px;
-  padding: 0.75rem 1.1rem;
+  padding: 0.85rem 1.2rem;
 }
 
 .result-card{
   background: rgba(34,197,94,0.10);
   border: 1px solid rgba(34,197,94,0.22);
   border-radius: 18px;
-  padding: 16px 22px;
-  margin-top: 16px;
+  padding: 18px 22px;
+  margin-top: 18px;
 }
 
 .result-text{
-  font-size: 1.25rem;           /* 结果更大 */
+  font-size: 1.38rem;             /* ✅ 结果更大 */
   font-weight: 900;
   margin: 0;
 }
@@ -154,7 +174,7 @@ def load_model():
 model = load_model()
 
 # -------------------------
-# 4) 语言切换 & 文本包（已去掉“Feature order...”那句）
+# 4) 语言切换 & 文本包（已去掉 Feature order 那句）
 # -------------------------
 lang = st.radio("🌐 Language / 语言", ["English", "中文"], horizontal=True)
 
@@ -196,7 +216,7 @@ text = {
 }[lang]
 
 # -------------------------
-# 5) 标题卡片（已删除“🧾 Feature order ...”）
+# 5) 标题卡片（✅ 不再显示 Feature order 行）
 # -------------------------
 st.markdown(f"""
 <div class="header-card">
@@ -227,7 +247,7 @@ prediction = None
 df_result = None
 
 if st.button(text["button_predict"]):
-    # 传入模型的特征顺序：C0, Time, pH, Dosage, Temp（与附件 data.xlsx 一致）
+    # 模型输入顺序：C0, Time, pH, Dosage, Temp
     input_data = np.array([[c0, ads_time, pH, dosage, temperature]], dtype=float)
     prediction = float(model.predict(input_data)[0])
 
@@ -240,7 +260,7 @@ if st.button(text["button_predict"]):
         unsafe_allow_html=True
     )
 
-    # 导出列顺序：C0 → Time → pH → Dosage → Temp（与附件一致）
+    # 导出列顺序：C0 → Time → pH → Dosage → Temp
     df_result = pd.DataFrame([{
         "C0": c0,
         "Time": ads_time,
