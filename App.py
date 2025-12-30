@@ -70,7 +70,7 @@ html, body, [class*="css"]{
 }
 
 .title{
-  font-size: 1.30rem;             /* ✅ 标题更大 */
+  font-size: 1.10rem;             /* ✅ 标题更大 */
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0 0 12px 0;
@@ -278,6 +278,7 @@ if prediction is not None and df_result is not None:
         file_name=text["file_name"],
         mime="text/csv"
     )
+
 
 
 
