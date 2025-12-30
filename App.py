@@ -5,6 +5,9 @@ import pandas as pd
 import joblib
 from io import BytesIO
 
+from sklearn.impute import KNNImputer
+from sklearn.preprocessing import PowerTransformer, StandardScaler
+
 # -------------------------
 # 1) 页面配置
 # -------------------------
@@ -14,7 +17,7 @@ st.set_page_config(
 )
 
 # -------------------------
-# 2) 样式（保持你现在的字体设置：英文标题不变）
+# 2) 样式（保持你当前的设置，不额外改字体）
 # -------------------------
 st.markdown("""
 <style>
@@ -68,7 +71,7 @@ html, body, [class*="css"]{
 }
 
 .title{
-  font-size: 1.85rem;   /* ✅ 英文标题字体大小保持不变 */
+  font-size: 1.85rem;   /* 英文标题保持不变 */
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0 0 12px 0;
@@ -159,34 +162,59 @@ div[data-baseweb="input"] input{
 """, unsafe_allow_html=True)
 
 # -------------------------
-# 3) 加载模型（✅ 解决“换模型文件但预测不变”的缓存问题）
-#    - 用文件修改时间 mtime 作为 cache key
-#    - 提供手动 Reload 按钮
+# 3) 路径
 # -------------------------
 MODEL_PATH = "ada.pkl"
+DATA_PATH = "data.xlsx"   # 用来拟合预处理器（要和训练时一致）
 
+FEATURES = ["C0", "Time", "pH", "Dosage", "Temp"]  # 你的特征顺序
+
+# -------------------------
+# 4) 加载模型 + 拟合预处理器（关键修复点）
+# -------------------------
 @st.cache_resource
-def load_model(model_path: str, mtime: float):
-    return joblib.load(model_path)
+def load_assets(model_path: str, data_path: str, mtime_model: float, mtime_data: float):
+    # 1) 读训练数据（用于拟合 imputer/transformer/scaler）
+    df = pd.read_excel(data_path)
+    X = df[FEATURES].values
 
-def get_model():
+    # 2) 与你训练代码一致：KNNImputer + Yeo-Johnson + StandardScaler
+    imputer = KNNImputer(n_neighbors=5)
+    X_imp = imputer.fit_transform(X)
+
+    pt = PowerTransformer(method="yeo-johnson")
+    X_pt = pt.fit_transform(X_imp)
+
+    scaler = StandardScaler()
+    scaler.fit(X_pt)
+
+    # 3) 加载模型（模型是在“预处理后特征”上训练的）
+    model = joblib.load(model_path)
+    return model, imputer, pt, scaler
+
+def get_assets():
     if not os.path.exists(MODEL_PATH):
         st.error(f"Model file not found: {MODEL_PATH}")
         st.stop()
-    mtime = os.path.getmtime(MODEL_PATH)
-    return load_model(MODEL_PATH, mtime)
+    if not os.path.exists(DATA_PATH):
+        st.error(f"Data file not found: {DATA_PATH}  (需要它来拟合预处理器)")
+        st.stop()
+
+    m_model = os.path.getmtime(MODEL_PATH)
+    m_data = os.path.getmtime(DATA_PATH)
+    return load_assets(MODEL_PATH, DATA_PATH, m_model, m_data)
 
 col1, col2 = st.columns([1, 2])
 with col1:
-    if st.button("🔄 Reload model"):
+    if st.button("🔄 Reload (clear cache)"):
         st.cache_resource.clear()
 with col2:
-    st.caption(f"Using model: {MODEL_PATH}")
+    st.caption(f"Using: {MODEL_PATH} + {DATA_PATH}")
 
-model = get_model()
+model, imputer, pt, scaler = get_assets()
 
 # -------------------------
-# 4) 语言切换 & 文本包
+# 5) 语言切换
 # -------------------------
 lang = st.radio("🌐 Language / 语言", ["English", "中文"], horizontal=True)
 
@@ -206,7 +234,6 @@ text = {
         "result_prefix": "✅ Predicted TC adsorption capacity:",
         "file_name": "tc_prediction_result.csv",
         "section_inputs": "Input conditions",
-        "debug_title": "Debug (check inputs)"
     },
     "中文": {
         "title": "🔬 Fe@RSBC-β-CD 对四环素（TC）吸附量的机器学习预测",
@@ -223,12 +250,11 @@ text = {
         "result_prefix": "✅ 预测的四环素吸附量：",
         "file_name": "四环素预测结果.csv",
         "section_inputs": "输入条件",
-        "debug_title": "调试（检查输入）"
     }
 }[lang]
 
 # -------------------------
-# 5) 标题 + 描述
+# 6) 标题
 # -------------------------
 st.markdown(f"""
 <div class="header-card">
@@ -238,7 +264,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # -------------------------
-# 6) 输入（顺序：C0 → Time → pH → Dosage → Temp）
+# 7) 输入（顺序：C0 → Time → pH → Dosage → Temp）
 # -------------------------
 st.markdown(f"""
 <div class="input-card">
@@ -252,13 +278,46 @@ pH = st.number_input(text["input_labels"][2], min_value=1.0, max_value=14.0, val
 dosage = st.number_input(text["input_labels"][3], min_value=0.0, value=20.0, step=1.0)
 temperature = st.number_input(text["input_labels"][4], min_value=0.0, value=25.0, step=1.0)
 
-input_data = np.array([[c0, ads_time, pH, dosage, temperature]], dtype=float)
+raw_input = np.array([[c0, ads_time, pH, dosage, temperature]], dtype=float)
 
 # -------------------------
-# 7) Debug：确认输入确实变了（不影响界面，折叠里看）
+# 8) 预测 + 导出（关键：先做预处理，再 predict）
 # -------------------------
-with st.expander(f"🧾 {text['debug_title']}", expanded=False):
-    st.write("Model type:", type(model))
-    nfi = getattr(model, "n_features_in_", None)
-    if nfi is not None:
-        st.write("m
+prediction = None
+df_result = None
+
+if st.button(text["button_predict"]):
+    # 预处理：imputer -> powertransform -> scaler
+    X_imp = imputer.transform(raw_input)
+    X_pt = pt.transform(X_imp)
+    X_scaled = scaler.transform(X_pt)
+
+    prediction = float(model.predict(X_scaled)[0])
+
+    st.markdown(
+        f"""
+        <div class="result-card">
+          <p class="result-text">{text['result_prefix']} <span style="color:#15803d;">{prediction:.2f} mg/g</span></p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    df_result = pd.DataFrame([{
+        "C0": c0,
+        "Time": ads_time,
+        "pH": pH,
+        "Dosage": dosage,
+        "Temp": temperature,
+        "Predicted TC Adsorption (mg/g)": round(prediction, 2)
+    }], columns=["C0", "Time", "pH", "Dosage", "Temp", "Predicted TC Adsorption (mg/g)"])
+
+if prediction is not None and df_result is not None:
+    towrite = BytesIO()
+    df_result.to_csv(towrite, index=False)
+    st.download_button(
+        label=text["button_export"],
+        data=towrite.getvalue(),
+        file_name=text["file_name"],
+        mime="text/csv"
+    )
