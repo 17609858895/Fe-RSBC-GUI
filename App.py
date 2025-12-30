@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -13,7 +14,7 @@ st.set_page_config(
 )
 
 # -------------------------
-# 2) 样式：更大字体 + 配色 + 卡片布局
+# 2) 样式（保持你现在的字体设置：英文标题不变）
 # -------------------------
 st.markdown("""
 <style>
@@ -39,11 +40,10 @@ st.markdown("""
 html, body, [class*="css"]{
   font-family: 'Inter', 'Segoe UI', sans-serif;
   color: var(--text);
-  font-size: 20px !important;     /* ✅ 全局再大一档 */
+  font-size: 20px !important;
   line-height: 1.6;
 }
 
-/* ✅ 统一放大 Markdown 文字（描述、普通段落等） */
 [data-testid="stMarkdownContainer"] p,
 [data-testid="stMarkdownContainer"] li,
 .stMarkdown p,
@@ -51,10 +51,8 @@ html, body, [class*="css"]{
   font-size: 1.15rem !important;
 }
 
-/* ✅ 强制隐藏旧版本残留的 “Feature order ...” 行（就算你没删干净也不会显示） */
-.small-note{
-  display: none !important;
-}
+/* 强制隐藏旧版本残留的 “Feature order ...” 行 */
+.small-note{ display: none !important; }
 
 .block-container{
   padding-top: 0.6rem !important;
@@ -70,14 +68,14 @@ html, body, [class*="css"]{
 }
 
 .title{
-  font-size: 1.40rem;             /* ✅ 标题更大 */
+  font-size: 1.85rem;   /* ✅ 英文标题字体大小保持不变 */
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0 0 12px 0;
 }
 
 .desc{
-  font-size: 1.22rem;             /* ✅ 描述更大 */
+  font-size: 1.22rem;
   color: var(--muted);
   margin: 0;
   line-height: 1.7;
@@ -94,12 +92,11 @@ html, body, [class*="css"]{
 }
 
 .section-title{
-  font-size: 1.22rem;             /* ✅ 小标题更大 */
+  font-size: 1.22rem;
   font-weight: 800;
   margin: 0;
 }
 
-/* ✅ Radio 标题和选项都放大 */
 .stRadio > label{
   font-weight: 800 !important;
   font-size: 1.18rem !important;
@@ -109,20 +106,17 @@ div[role="radiogroup"] label{
   font-weight: 700 !important;
 }
 
-/* ✅ 输入标签更大 */
 .stNumberInput label{
   font-size: 1.18rem !important;
   font-weight: 800 !important;
   color: #111827;
 }
 
-/* ✅ 输入框的数值更大 */
 div[data-baseweb="input"] input{
   font-size: 1.18rem !important;
   padding: 12px 14px !important;
 }
 
-/* ✅ 按钮更大 */
 .stButton > button{
   width: 100%;
   background: var(--accent);
@@ -157,7 +151,7 @@ div[data-baseweb="input"] input{
 }
 
 .result-text{
-  font-size: 1.38rem;             /* ✅ 结果更大 */
+  font-size: 1.38rem;
   font-weight: 900;
   margin: 0;
 }
@@ -165,16 +159,34 @@ div[data-baseweb="input"] input{
 """, unsafe_allow_html=True)
 
 # -------------------------
-# 3) 加载模型
+# 3) 加载模型（✅ 解决“换模型文件但预测不变”的缓存问题）
+#    - 用文件修改时间 mtime 作为 cache key
+#    - 提供手动 Reload 按钮
 # -------------------------
+MODEL_PATH = "ada.pkl"
+
 @st.cache_resource
-def load_model():
-    return joblib.load("ada.pkl")
+def load_model(model_path: str, mtime: float):
+    return joblib.load(model_path)
 
-model = load_model()
+def get_model():
+    if not os.path.exists(MODEL_PATH):
+        st.error(f"Model file not found: {MODEL_PATH}")
+        st.stop()
+    mtime = os.path.getmtime(MODEL_PATH)
+    return load_model(MODEL_PATH, mtime)
+
+col1, col2 = st.columns([1, 2])
+with col1:
+    if st.button("🔄 Reload model"):
+        st.cache_resource.clear()
+with col2:
+    st.caption(f"Using model: {MODEL_PATH}")
+
+model = get_model()
 
 # -------------------------
-# 4) 语言切换 & 文本包（已去掉 Feature order 那句）
+# 4) 语言切换 & 文本包
 # -------------------------
 lang = st.radio("🌐 Language / 语言", ["English", "中文"], horizontal=True)
 
@@ -193,12 +205,12 @@ text = {
         "button_export": "📁 Export CSV",
         "result_prefix": "✅ Predicted TC adsorption capacity:",
         "file_name": "tc_prediction_result.csv",
-        "section_inputs": "Input conditions"
+        "section_inputs": "Input conditions",
+        "debug_title": "Debug (check inputs)"
     },
     "中文": {
         "title": "🔬 Fe@RSBC-β-CD 对四环素（TC）吸附量的机器学习预测",
         "description": "根据给定实验条件，预测 Fe@RSBC-β-CD 对四环素（TC）的单位吸附量（mg/g）。",
-        # 按附件数据列顺序：C0 → Time → pH → Dosage → Temp
         "input_labels": [
             "💧 初始四环素浓度 C0 (mg/L)",
             "⏱ 吸附时间 (min)",
@@ -210,12 +222,13 @@ text = {
         "button_export": "📁 导出 CSV",
         "result_prefix": "✅ 预测的四环素吸附量：",
         "file_name": "四环素预测结果.csv",
-        "section_inputs": "输入条件"
+        "section_inputs": "输入条件",
+        "debug_title": "调试（检查输入）"
     }
 }[lang]
 
 # -------------------------
-# 5) 标题卡片（✅ 不再显示 Feature order 行）
+# 5) 标题 + 描述
 # -------------------------
 st.markdown(f"""
 <div class="header-card">
@@ -225,7 +238,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # -------------------------
-# 6) 输入（按附件顺序：C0 → Time → pH → Dosage → Temp）
+# 6) 输入（顺序：C0 → Time → pH → Dosage → Temp）
 # -------------------------
 st.markdown(f"""
 <div class="input-card">
@@ -236,55 +249,16 @@ st.markdown(f"""
 c0 = st.number_input(text["input_labels"][0], min_value=0.0, value=50.0, step=1.0)
 ads_time = st.number_input(text["input_labels"][1], min_value=0.0, value=120.0, step=1.0)
 pH = st.number_input(text["input_labels"][2], min_value=1.0, max_value=14.0, value=7.0, step=0.1)
-dosage = st.number_input(text["input_labels"][3], min_value=0.0, value=1.0, step=0.1)
+dosage = st.number_input(text["input_labels"][3], min_value=0.0, value=20.0, step=1.0)
 temperature = st.number_input(text["input_labels"][4], min_value=0.0, value=25.0, step=1.0)
 
+input_data = np.array([[c0, ads_time, pH, dosage, temperature]], dtype=float)
+
 # -------------------------
-# 7) 预测 + 导出
+# 7) Debug：确认输入确实变了（不影响界面，折叠里看）
 # -------------------------
-prediction = None
-df_result = None
-
-if st.button(text["button_predict"]):
-    # 模型输入顺序：C0, Time, pH, Dosage, Temp
-    input_data = np.array([[c0, ads_time, pH, dosage, temperature]], dtype=float)
-    prediction = float(model.predict(input_data)[0])
-
-    st.markdown(
-        f"""
-        <div class="result-card">
-          <p class="result-text">{text['result_prefix']} <span style="color:#15803d;">{prediction:.2f} mg/g</span></p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # 导出列顺序：C0 → Time → pH → Dosage → Temp
-    df_result = pd.DataFrame([{
-        "C0": c0,
-        "Time": ads_time,
-        "pH": pH,
-        "Dosage": dosage,
-        "Temp": temperature,
-        "Predicted TC Adsorption (mg/g)": round(prediction, 2)
-    }], columns=["C0", "Time", "pH", "Dosage", "Temp", "Predicted TC Adsorption (mg/g)"])
-
-if prediction is not None and df_result is not None:
-    towrite = BytesIO()
-    df_result.to_csv(towrite, index=False)
-    st.download_button(
-        label=text["button_export"],
-        data=towrite.getvalue(),
-        file_name=text["file_name"],
-        mime="text/csv"
-    )
-
-
-
-
-
-
-
-
-
-
+with st.expander(f"🧾 {text['debug_title']}", expanded=False):
+    st.write("Model type:", type(model))
+    nfi = getattr(model, "n_features_in_", None)
+    if nfi is not None:
+        st.write("m
