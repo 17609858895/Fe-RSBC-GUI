@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # -------------------------
-# 2) 样式：字体 + 配色 + 卡片布局
+# 2) 样式：更大字体 + 配色 + 卡片布局
 # -------------------------
 st.markdown("""
 <style>
@@ -31,15 +31,17 @@ st.markdown("""
 }
 
 .stApp{
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 2.2rem 1.8rem 3.2rem 1.8rem;
+  padding: 2.4rem 2.0rem 3.6rem 2.0rem;
   background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
 }
 
 html, body, [class*="css"]{
   font-family: 'Inter', 'Segoe UI', sans-serif;
   color: var(--text);
+  font-size: 18px;              /* 全局字体更大 */
+  line-height: 1.55;
 }
 
 .block-container{
@@ -49,98 +51,95 @@ html, body, [class*="css"]{
 .header-card{
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px 18px 14px 18px;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-  margin-bottom: 14px;
+  border-radius: 18px;
+  padding: 22px 22px 18px 22px;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.06);
+  margin-bottom: 16px;
 }
 
 .title{
-  font-size: 1.65rem;
-  font-weight: 700;
+  font-size: 2.05rem;           /* 标题更大 */
+  font-weight: 800;
   letter-spacing: -0.02em;
-  margin: 0 0 6px 0;
+  margin: 0 0 10px 0;
 }
 
 .desc{
-  font-size: 1.02rem;
+  font-size: 1.15rem;           /* 描述更大 */
   color: var(--muted);
   margin: 0;
-  line-height: 1.55;
+  line-height: 1.65;
 }
 
 .input-card{
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 16px 18px 6px 18px;
+  border-radius: 18px;
+  padding: 18px 22px 10px 22px;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
-  margin-top: 12px;
+  margin-top: 14px;
 }
 
 .section-title{
-  font-weight: 650;
-  margin: 0 0 10px 0;
+  font-size: 1.15rem;           /* 小标题更大 */
+  font-weight: 800;
+  margin: 0 0 12px 0;
   color: #111827;
 }
 
 .stRadio > label{
-  font-weight: 600;
+  font-weight: 800;
+  font-size: 1.10rem;           /* radio 标题更大 */
 }
 
 .stNumberInput label{
-  font-size: 0.98rem;
-  font-weight: 600;
+  font-size: 1.10rem;           /* 输入标签更大 */
+  font-weight: 800;
   color: #111827;
+}
+
+div[data-baseweb="input"] input{
+  font-size: 1.08rem !important; /* 输入框数值更大 */
+  padding: 10px 12px !important;
 }
 
 .stButton > button{
   width: 100%;
   background: var(--accent);
   color: white;
-  font-weight: 700;
-  font-size: 1.02rem;
-  padding: 0.62rem 1.0rem;
-  border-radius: 12px;
+  font-weight: 900;
+  font-size: 1.15rem;           /* 按钮更大 */
+  padding: 0.82rem 1.1rem;
+  border-radius: 14px;
   border: none;
-  margin-top: 14px;
-  box-shadow: 0 10px 18px rgba(59,130,246,0.18);
-}
-
-.stButton > button:hover{
-  filter: brightness(0.98);
-  transform: translateY(-1px);
+  margin-top: 16px;
+  box-shadow: 0 12px 20px rgba(59,130,246,0.18);
 }
 
 .stDownloadButton > button{
   width: 100%;
   background: white;
   color: var(--text);
-  font-weight: 650;
+  font-weight: 800;
+  font-size: 1.08rem;           /* 下载按钮更大 */
   border: 1px solid rgba(31,41,55,0.14);
-  border-radius: 12px;
-  margin-top: 10px;
-  padding: 0.55rem 1.0rem;
+  border-radius: 14px;
+  margin-top: 12px;
+  padding: 0.75rem 1.1rem;
 }
 
 .result-card{
   background: rgba(34,197,94,0.10);
   border: 1px solid rgba(34,197,94,0.22);
-  border-radius: 16px;
-  padding: 14px 18px;
-  margin-top: 14px;
+  border-radius: 18px;
+  padding: 16px 22px;
+  margin-top: 16px;
 }
 
 .result-text{
-  font-size: 1.08rem;
-  font-weight: 700;
+  font-size: 1.25rem;           /* 结果更大 */
+  font-weight: 900;
   margin: 0;
-}
-
-.small-note{
-  font-size: 0.92rem;
-  color: var(--muted);
-  margin-top: 6px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -155,7 +154,7 @@ def load_model():
 model = load_model()
 
 # -------------------------
-# 4) 语言切换 & 文本包
+# 4) 语言切换 & 文本包（已去掉“Feature order...”那句）
 # -------------------------
 lang = st.radio("🌐 Language / 语言", ["English", "中文"], horizontal=True)
 
@@ -175,8 +174,7 @@ text = {
         "button_export": "📁 Export CSV",
         "result_prefix": "✅ Predicted TC adsorption capacity:",
         "file_name": "tc_prediction_result.csv",
-        "section_inputs": "Input conditions",
-        "note_order": "Feature order (model input): C0 → Time → pH → Dosage → Temp"
+        "section_inputs": "Input conditions"
     },
     "中文": {
         "title": "🔬 Fe@RSBC-β-CD 对四环素（TC）吸附量的机器学习预测",
@@ -193,24 +191,22 @@ text = {
         "button_export": "📁 导出 CSV",
         "result_prefix": "✅ 预测的四环素吸附量：",
         "file_name": "四环素预测结果.csv",
-        "section_inputs": "输入条件",
-        "note_order": "模型特征顺序：C0 → Time → pH → Dosage → Temp"
+        "section_inputs": "输入条件"
     }
 }[lang]
 
 # -------------------------
-# 5) 标题卡片
+# 5) 标题卡片（已删除“🧾 Feature order ...”）
 # -------------------------
 st.markdown(f"""
 <div class="header-card">
   <div class="title">{text["title"]}</div>
   <p class="desc">{text["description"]}</p>
-  <p class="small-note">🧾 {text["note_order"]}</p>
 </div>
 """, unsafe_allow_html=True)
 
 # -------------------------
-# 6) 输入（按附件顺序）
+# 6) 输入（按附件顺序：C0 → Time → pH → Dosage → Temp）
 # -------------------------
 st.markdown(f"""
 <div class="input-card">
@@ -218,7 +214,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 注意：显示顺序与传入顺序一致：C0 → Time → pH → Dosage → Temp
 c0 = st.number_input(text["input_labels"][0], min_value=0.0, value=50.0, step=1.0)
 ads_time = st.number_input(text["input_labels"][1], min_value=0.0, value=120.0, step=1.0)
 pH = st.number_input(text["input_labels"][2], min_value=1.0, max_value=14.0, value=7.0, step=0.1)
@@ -239,7 +234,7 @@ if st.button(text["button_predict"]):
     st.markdown(
         f"""
         <div class="result-card">
-          <p class="result-text">{text["result_prefix"]} <span style="color:#15803d;">{prediction:.2f} mg/g</span></p>
+          <p class="result-text">{text['result_prefix']} <span style="color:#15803d;">{prediction:.2f} mg/g</span></p>
         </div>
         """,
         unsafe_allow_html=True
