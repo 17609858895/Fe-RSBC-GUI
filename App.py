@@ -182,7 +182,6 @@ text = {
     "English": {
         "title": "🔬 ML prediction of tetracycline (TC) adsorption on Fe@RSBC-β-CD",
         "description": "Predict the TC adsorption capacity (mg/g) of Fe@RSBC-β-CD under specified experimental conditions.",
-        # 按附件数据列顺序：C0 → Time → pH → Dosage → Temp
         "input_labels": [
             "💧 Initial TC concentration, C0 (mg/L)",
             "⏱ Adsorption time (min)",
@@ -279,3 +278,4 @@ if prediction is not None and df_result is not None:
         file_name=text["file_name"],
         mime="text/csv"
     )
+
