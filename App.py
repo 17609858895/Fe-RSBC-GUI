@@ -186,7 +186,7 @@ text = {
             "💧 Initial TC concentration, C0 (mg/L)",
             "⏱ Adsorption time (min)",
             "🌡 Solution pH",
-            "🧪 Adsorbent dosage (mg/L)",
+            "🧪 Adsorbent dosage (mg)",
             "🌤 Temperature (°C)"
         ],
         "button_predict": "🔍 Predict adsorption capacity",
@@ -278,6 +278,7 @@ if prediction is not None and df_result is not None:
         file_name=text["file_name"],
         mime="text/csv"
     )
+
 
 
 
