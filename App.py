@@ -203,7 +203,7 @@ text = {
             "💧 初始四环素浓度 C0 (mg/L)",
             "⏱ 吸附时间 (min)",
             "🌡 溶液 pH",
-            "🧪 吸附剂投加量 (g/L)",
+            "🧪 吸附剂投加量 (mg)",
             "🌤 温度 (°C)"
         ],
         "button_predict": "🔍 预测吸附量",
@@ -278,6 +278,7 @@ if prediction is not None and df_result is not None:
         file_name=text["file_name"],
         mime="text/csv"
     )
+
 
 
 
