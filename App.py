@@ -208,11 +208,11 @@ text = {
     "English": {
         "title": "🔬 ML prediction of tetracycline (TC) adsorption on Fe@RSBC-β-CD",
         "description": (
-            "Predict the TC adsorption capacity (mg/g) of Fe@RSBC-β-CD "
+            "Predict the TC adsorption capacity (mg g⁻¹) of Fe@RSBC-β-CD "
             "under specified experimental conditions."
         ),
         "input_labels": [
-            "💧 Initial TC concentration, C0 (mg/L)",
+            "💧 Initial TC concentration, C₀ (mg L⁻¹)",
             "⏱ Adsorption time (min)",
             "🌡 Solution pH",
             "🧪 Adsorbent dosage (mg)",
@@ -227,9 +227,9 @@ text = {
     },
     "中文": {
         "title": "🔬 Fe@RSBC-β-CD 对四环素（TC）吸附量的机器学习预测",
-        "description": "根据给定实验条件，预测 Fe@RSBC-β-CD 对四环素（TC）的单位吸附量（mg/g）。",
+        "description": "根据给定实验条件，预测 Fe@RSBC-β-CD 对四环素（TC）的单位吸附量（mg g⁻¹）。",
         "input_labels": [
-            "💧 初始四环素浓度 C0 (mg/L)",
+            "💧 初始四环素浓度 C₀ (mg L⁻¹)",
             "⏱ 吸附时间 (min)",
             "🌡 溶液 pH",
             "🧪 吸附剂投加量 (mg)",
@@ -310,7 +310,7 @@ if st.button(text["button_predict"]):
     st.markdown(
         f"""
         <div class="result-card">
-          <p class="result-text">{text['result_prefix']} <span style="color:#15803d;">{prediction:.2f} mg/g</span></p>
+          <p class="result-text">{text['result_prefix']} <span style="color:#15803d;">{prediction:.2f} mg g⁻¹</span></p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -319,21 +319,21 @@ if st.button(text["button_predict"]):
     df_result = pd.DataFrame(
         [
             {
-                "C0": c0,
-                "Time": ads_time,
+                "C₀ (mg L⁻¹)": c0,
+                "Time (min)": ads_time,
                 "pH": pH,
-                "Dosage": dosage,
-                "Temp": temperature,
-                "Predicted TC Adsorption (mg/g)": round(prediction, 2),
+                "Dosage (mg)": dosage,
+                "Temperature (°C)": temperature,
+                "Predicted TC adsorption capacity (mg g⁻¹)": round(prediction, 2),
             }
         ],
         columns=[
-            "C0",
-            "Time",
+            "C₀ (mg L⁻¹)",
+            "Time (min)",
             "pH",
-            "Dosage",
-            "Temp",
-            "Predicted TC Adsorption (mg/g)",
+            "Dosage (mg)",
+            "Temperature (°C)",
+            "Predicted TC adsorption capacity (mg g⁻¹)",
         ],
     )
 
@@ -349,8 +349,9 @@ if prediction is not None and df_result is not None:
 
 with st.expander(f"🧾 {text['debug_title']}", expanded=False):
     st.write("Model type:", type(model))
-    st.write("Feature order:", metadata["feature_order"])
-    st.write("Current raw input (C0, Time, pH, Dosage, Temp):")
+    display_feature_order = ["C₀", "Time", "pH", "Dosage", "Temp"]
+    st.write("Feature order:", display_feature_order)
+    st.write("Current raw input (C₀, Time, pH, Dosage, Temp):")
     st.code(str(raw_input))
 
     sample_a = np.array([[40, 120, 7, 20, 25]], dtype=float)
